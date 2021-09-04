@@ -13,24 +13,21 @@ and Dependency =
     | Distributed of Component list
 
 let rec calculateCompositeSla entryComponent =
-    let distributedSla components =
+    let downProbabilityPercentage components =
         let folder acc c =
             let componentSla = calculateCompositeSla c // 99.99, 99.9
         
             (1m - (componentSla / 100m)) * acc
     
-        let x = List.fold folder 1m components
+        let downProbability =
+            List.fold folder 1m components
         
-        let dist = x * 100m
-        
-        printfn "%A" dist
-        
-        dist
+        downProbability * 100m
 
     let dependencyDownProbability =
         function
         | Direct c       -> 100m - calculateCompositeSla c
-        | Distributed cs -> 100m - distributedSla cs
+        | Distributed cs -> downProbabilityPercentage cs
 
     match entryComponent.Dependencies with
     | []         -> entryComponent.SLA
@@ -48,14 +45,14 @@ let appService = {
     
 calculateCompositeSla appService
 |> printfn "%A"
-
+    
 let queue = {
     SLA = 99.9m
     Dependencies = []
 }
 
 let sqlDatabase' = {
-    SLA = 99.95m
+    SLA = 99.99m
     Dependencies = []
 }
 
@@ -65,4 +62,12 @@ let webApp = {
 }
 
 calculateCompositeSla webApp
+|> printfn "%A"
+
+let trafficManager = {
+    SLA = 99.99m
+    Dependencies = [ Distributed [ appService; webApp ] ]
+}
+
+calculateCompositeSla trafficManager
 |> printfn "%A"
