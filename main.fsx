@@ -1,13 +1,8 @@
 open System
 
-// A component can be a Load Balancer
-// A component can be multiple A/A instances, in that case, redundancy is > 1
 type Component = {
     Dependencies : Dependency list
-    SLA : decimal // option if a component does not have an SLA, what do we do? that should mean that the whole solution does not have one, unless we can ignore the component, should we add a "canGoDown flag?"
-//    Redundancy : int
-//    RTO : TimeSpan option
-//    RPO : TimeSpan option
+    SLA : decimal
 }
 and Dependency =
     | Simple of Component // AND dependency
@@ -32,7 +27,7 @@ let formRecognizer = {
 
 let azureFunction = {
     SLA = 99.5m
-    Dependencies = [ blobStorage; formRecognizer ]
+    Dependencies = [ Simple blobStorage; Simple formRecognizer ]
 //    Redundancy = 1
 //    RTO = None
 //    RPO = None
@@ -49,7 +44,7 @@ let azureAd = {
 // TODO: What happens when both Azure Function and APIM have a dependency on blob, make sure we do the math right
 let apiManagement = {
     SLA = 99.9m
-    Dependencies = [ azureFunction; azureAd; (*blobStorage*) ]
+    Dependencies = [ Simple azureFunction; Simple azureAd; (*blobStorage*) ]
 //    Redundancy = 1
 //    RTO = None
 //    RPO = None
