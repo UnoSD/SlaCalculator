@@ -4,9 +4,9 @@ Calculate composite SLA for solutions
 # Example
 ```fsharp
 let sqlDatabase = {
-        SLA = 99.95m
-        Dependencies = []
-    }
+    SLA = 99.95m
+    Dependencies = []
+}
 
 let appService = {
     SLA = 99.95m
