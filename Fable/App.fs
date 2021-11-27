@@ -3,7 +3,6 @@ module App
 open Elmish
 open Elmish.HMR
 open Elmish.Debug
-open SlaCalculator.Model
 open SlaCalculator.Updates
 open SlaCalculator.View
 

@@ -1,8 +1,9 @@
 module SlaCalculator.View
 
-open Fable.React
+open SlaCalculator.Tabs
+open SlaCalculator.Page
 open Feliz
-open Fulma
 
-let view _ _ = Html.div [ Html.strong "ciao Peppe"
-                          Button.button [] [ str "Ciao" ] ]
+let view model dispatch =
+    Html.div [ tabs model dispatch
+               page model dispatch ]

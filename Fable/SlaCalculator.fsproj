@@ -3,7 +3,14 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Model.fs" />
+    <Compile Include="Models.fs" />
+    <Compile Include="Helpers.fs" />
+    <Compile Include="Messages.fs" />
+    <Compile Include="Calculate.fs" />
+    <Compile Include="Calculator.fs" />
+    <Compile Include="About.fs" />
+    <Compile Include="Page.fs" />
+    <Compile Include="Tabs.fs" />
     <Compile Include="View.fs" />
     <Compile Include="Updates.fs" />
     <Compile Include="App.fs" />
