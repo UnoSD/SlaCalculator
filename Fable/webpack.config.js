@@ -1,5 +1,4 @@
 const path = require("path");
-const webpack = require("webpack");
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
@@ -59,11 +58,10 @@ module.exports = (env, options) => {
                     filename: 'style.css'
                 })
             ])
-            : commonPlugins.concat([
-                new webpack.HotModuleReplacementPlugin()
-            ]),
+            : commonPlugins,
         devServer: {
-            port: 8080
+            port: 8080,
+            hot: true
         },
         module: {
             rules: [
