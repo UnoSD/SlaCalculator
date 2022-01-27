@@ -1,5 +1,7 @@
 # SlaCalculator
-Calculate composite SLA for solutions
+Calculate composite SLA for solutions.
+
+Add the components following the example to `main.fsx` and run the script to get the results.
 
 # Example
 ```fsharp

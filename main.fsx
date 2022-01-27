@@ -1,9 +1,3 @@
-// https://devops.stackexchange.com/questions/711/how-do-you-calculate-the-compound-service-level-agreement-sla-for-cloud-servic
-// https://docs.microsoft.com/en-us/azure/architecture/framework/resiliency/business-metrics
-// https://docs.microsoft.com/en-us/answers/questions/122986/composite-slas.html
-
-// Does it exist already? https://github.com/mspnp/samples/tree/master/Reliability/SLAEstimator
-
 type Component = {
     Dependencies : Dependency list
     SLA : decimal
