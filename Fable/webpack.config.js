@@ -63,13 +63,7 @@ module.exports = (env, options) => {
                 new webpack.HotModuleReplacementPlugin()
             ]),
         devServer: {
-            port: 8080,
-            proxy: {
-                '/socketcluster': {
-                    target: 'http://localhost:' + (process.env.SERVER_PROXY_PORT || "8000"),
-                    ws: true
-                }
-            }
+            port: 8080
         },
         module: {
             rules: [
