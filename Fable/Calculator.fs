@@ -64,7 +64,7 @@ let calculatorCard model dispatch =
         Decimal.TryParse model.SLA
     
     card [
-        Html.form [
+        Html.div [
             Box.box' [] [ totals model ]
             
             iconField "Name" Icon.Atom (Input.text [
