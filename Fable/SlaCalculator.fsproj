@@ -14,6 +14,16 @@
     <Compile Include="View.fs" />
     <Compile Include="Updates.fs" />
     <Compile Include="App.fs" />
+    
+    <None Include="global.json" />
+    <None Include="index.html" />
+    <None Include="main.scss" />
+    <None Include="package-lock.json" />
+    <None Include="package.json" />
+    <None Include="paket.dependencies" />
+    <None Include="paket.lock" />
+    <None Include="paket.references" />
+    <None Include="webpack.config.js" />
   </ItemGroup>
   <Import Project=".paket\Paket.Restore.targets" />
 </Project>

@@ -3,7 +3,7 @@ const webpack = require("webpack");
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
-var babelOptions = {
+let babelOptions = {
     presets: [
         ["@babel/preset-env", {
             "targets": {
@@ -16,7 +16,7 @@ var babelOptions = {
     ],
 };
 
-var commonPlugins = [
+let commonPlugins = [
     new HtmlWebpackPlugin({
         filename: './index.html',
         template: './index.html'
@@ -28,7 +28,7 @@ module.exports = (env, options) => {
     if (options.mode === undefined)
         options.mode = "development";
 
-    var isProduction = options.mode === "production";
+    let isProduction = options.mode === "production";
     console.log("Bundling for " + (isProduction ? "production" : "development") + "...");
 
     return {
