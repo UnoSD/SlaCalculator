@@ -64,7 +64,12 @@ module.exports = (env, options) => {
             ]),
         devServer: {
             port: 8080,
-            hot: true
+            proxy: {
+                '/socketcluster': {
+                    target: 'http://localhost:' + (process.env.SERVER_PROXY_PORT || "8000"),
+                    ws: true
+                }
+            }
         },
         module: {
             rules: [
@@ -100,7 +105,7 @@ module.exports = (env, options) => {
                     use: ['style-loader', 'css-loader']
                 },
                 {
-                    test: /\.(png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot)(\?.*$|$)/,
+                    test: /\.(png|jpg|jpeg|gif|svg|woff|ttf|eot)(\?.*$|$)/,
                     use: ["file-loader"]
                 }
             ]
