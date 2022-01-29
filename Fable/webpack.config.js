@@ -52,6 +52,9 @@ module.exports = (env, options) => {
             path: path.join(__dirname, './bin/publish'),
             filename: isProduction ? '[name].[hash].js' : '[name].js'
         },
+        optimization: {
+            runtimeChunk: 'single'
+        },
         plugins: isProduction ?
             commonPlugins.concat([
                 new MiniCssExtractPlugin({
