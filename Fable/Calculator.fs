@@ -110,6 +110,24 @@ let private textField dispatch isValid label icon event =
     ]
     |> iconField label icon
 
+let private checkBox dispatch isChecked isDisabled text event =
+    let options = [
+            Props [
+                Disabled isDisabled
+                OnClick (fun _ -> if isDisabled then () else event |> dispatch)
+                ReadOnly true
+                Checked isChecked
+            ]
+        ]
+    
+    [ Checkbox.input options
+      str text ]
+    |> Checkbox.checkbox options
+    |> List.singleton
+    |> Control.div []
+    |> List.singleton
+    |> Field.div []
+
 let calculatorCard model dispatch =
     let button = button dispatch
     let componentsTable = componentsTable model
@@ -118,6 +136,7 @@ let calculatorCard model dispatch =
     let isSlaValid = (Decimal.TryParse model.SLA |> fst)
     let totalsBox = Box.box' [] [ totals model ]
     let container (content : seq<ReactElement>) = card [ Html.div content ]
+    let entryPointSelector = checkBox dispatch model.IsEntryPoint model.EntryPoint.IsSome "Entrypoint" ChangeIsEntryPoint
     
     container [
         totalsBox
@@ -125,6 +144,8 @@ let calculatorCard model dispatch =
         textField true "Name" Icon.Atom ChangeName
         
         textField isSlaValid "SLA" Icon.Ambulance ChangeSLA
+        
+        entryPointSelector
         
         dependenciesBox
         

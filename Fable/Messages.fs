@@ -7,3 +7,4 @@ type Message =
     | ChangeName of string
     | ChangeSLA of string
     | ClickAdd
+    | ChangeIsEntryPoint

@@ -20,6 +20,7 @@ type Model = {
     EntryPoint : Component option
     Name : string
     SLA : string
+    IsEntryPoint : bool
 }
     
 let emptyModel = {
@@ -35,4 +36,5 @@ let emptyModel = {
     EntryPoint = None
     Name = ""
     SLA = "0.0"
+    IsEntryPoint = false
 }
