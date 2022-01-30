@@ -103,10 +103,11 @@ let private button dispatch name event =
         Button.OnClick (fun _ -> dispatch event)
     ] [ str name ]
 
-let private textField dispatch isValid label icon event =
+let private textField dispatch value isValid label icon event =
     Input.text [
         if isValid then () else Input.Color Color.IsDanger
         Input.OnChange (fun ev -> ev.Value |> event |> dispatch)
+        Input.Value value
     ]
     |> iconField label icon
 
@@ -141,9 +142,9 @@ let calculatorCard model dispatch =
     container [
         totalsBox
         
-        textField true "Name" Icon.Atom ChangeName
+        textField model.Name true "Name" Icon.Atom ChangeName
         
-        textField isSlaValid "SLA" Icon.Ambulance ChangeSLA
+        textField model.SLA isSlaValid "SLA" Icon.Ambulance ChangeSLA
         
         entryPointSelector
         
