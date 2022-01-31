@@ -15,15 +15,18 @@ let withComponentFromModel model =
         SLA = Decimal.Parse model.SLA
         Dependencies = model.Dependencies |> List.map Direct
     }
-    
+
+    let entryPoint = 
+        match model.IsEntryPoint with
+        | true    -> Some newComponent
+        | false   -> model.EntryPoint
+        
     { emptyModel with
         Components   = newComponent :: model.Components
-        EntryPoint   = match model.IsEntryPoint with
-                       | true    -> Some newComponent
-                       | false   -> model.EntryPoint
-        CompositeSLA = match model.EntryPoint with
-                       | None    -> 100m
-                       | Some ep -> calculateCompositeSla ep }
+        EntryPoint   = entryPoint
+        CompositeSLA = match entryPoint with
+                       | None    -> None
+                       | Some ep -> calculateCompositeSla ep |> Some }
 
 let private toggleDependency model comp =
     match model.Dependencies |> List.contains comp with

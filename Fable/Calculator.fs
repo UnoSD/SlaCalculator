@@ -43,7 +43,14 @@ let private totals model =
         Level.level [ ]
         
     let downtimeHoursPerYear =
-        (100m - model.CompositeSLA) * 365m * 24m / 100m
+        match model.CompositeSLA with
+        | Some sla -> (100m - sla) * 365m * 24m / 100m |> sprintf "%f hours"
+        | None     -> "Missing entrypoint"
+    
+    let compositeSla =
+        match model.CompositeSLA with
+        | Some sla -> sprintf "%f%%" sla
+        | None     -> "Missing entrypoint"
     
     let tile name value =
         [ Html.div [ Level.heading [ ]
@@ -53,11 +60,11 @@ let private totals model =
         |> Level.item [ Level.Item.HasTextCentered ]
     
     level [
-        tile "Composite SLA" (sprintf "%f%%" model.CompositeSLA)
+        tile "Composite SLA" compositeSla
         
         tile "Number of components" (sprintf "%i" (List.length model.Components))
         
-        tile "Downtime per year" (sprintf "%f hours" downtimeHoursPerYear)
+        tile "Downtime per year" downtimeHoursPerYear
     ]
 
 let private componentsTable model =
