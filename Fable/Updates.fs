@@ -13,7 +13,7 @@ let withComponentFromModel model =
     let newComponent = {
         Name = model.Name
         SLA = Decimal.Parse model.SLA
-        Dependencies = model.Components |> List.filter (fun x -> List.contains x.Name []) |> List.map Direct
+        Dependencies = model.Dependencies |> List.map Direct
     }
     
     { emptyModel with
@@ -25,10 +25,16 @@ let withComponentFromModel model =
                        | None    -> 100m
                        | Some ep -> calculateCompositeSla ep }
 
+let private toggleDependency model comp =
+    match model.Dependencies |> List.contains comp with
+    | true  -> model.Dependencies |> List.except [comp]
+    | false -> comp :: model.Dependencies
+
 let update message model =
     match message with    
-    | ChangeToTab tab    -> { model with CurrentTab = tab }                     , Cmd.none
-    | ChangeName name    -> { model with Name = name }                          , Cmd.none
-    | ChangeSLA sla      -> { model with SLA = sla }                            , Cmd.none
-    | ChangeIsEntryPoint -> { model with IsEntryPoint = not model.IsEntryPoint }, Cmd.none
-    | ClickAdd           -> model |> withComponentFromModel                     , Cmd.none
+    | ChangeToTab tab    -> { model with CurrentTab = tab }                       , Cmd.none
+    | ChangeName name    -> { model with Name = name }                            , Cmd.none
+    | ChangeSLA sla      -> { model with SLA = sla }                              , Cmd.none
+    | ChangeIsEntryPoint -> { model with IsEntryPoint = not model.IsEntryPoint }  , Cmd.none
+    | ToggleDependency d -> { model with Dependencies = toggleDependency model d }, Cmd.none
+    | ClickAdd           -> model |> withComponentFromModel                       , Cmd.none

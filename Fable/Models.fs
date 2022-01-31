@@ -17,10 +17,12 @@ type Model = {
     CurrentTab : Tab
     Components : Component list
     CompositeSLA : decimal
+    
     EntryPoint : Component option
     Name : string
     SLA : string
     IsEntryPoint : bool
+    Dependencies : Component list
 }
     
 let emptyModel = {
@@ -37,4 +39,5 @@ let emptyModel = {
     Name = ""
     SLA = "0.0"
     IsEntryPoint = false
+    Dependencies = []
 }

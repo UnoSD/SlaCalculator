@@ -8,3 +8,4 @@ type Message =
     | ChangeSLA of string
     | ClickAdd
     | ChangeIsEntryPoint
+    | ToggleDependency of Component

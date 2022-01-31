@@ -90,12 +90,20 @@ let private componentsTable model =
         )
     ]
 
-let private dependenciesBox model =
+let private dependenciesBox model dispatch =
+    let createOption (comp : Component) =
+        option [
+            // To prevent flickering when selecting dependencies, we can try and keep the original order
+            OnClick (fun _ -> comp |> ToggleDependency |> dispatch)
+        ] [ str comp.Name ]
+    
     Select.select [
         Select.IsMultiple
     ] [ select [ Multiple true
+                 ValueMultiple (model.Dependencies |> List.map (fun c -> c.Name) |> Array.ofList)
+                 ReadOnly true
                  Size 4. ] [
-        yield! model.Components |> List.map (fun c -> option [ Value c.Name ] [ str c.Name ])
+        yield! model.Components |> List.map createOption
     ] ]
 
 let private button dispatch name event =
@@ -132,7 +140,7 @@ let private checkBox dispatch isChecked isDisabled text event =
 let calculatorCard model dispatch =
     let button = button dispatch
     let componentsTable = componentsTable model
-    let dependenciesBox = dependenciesBox model
+    let dependenciesBox = dependenciesBox model dispatch
     let textField = textField dispatch
     let isSlaValid = (Decimal.TryParse model.SLA |> fst)
     let totalsBox = Box.box' [] [ totals model ]
