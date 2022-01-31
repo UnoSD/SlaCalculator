@@ -20,12 +20,20 @@ let private iconField (labelText : string) icon input =
                               Icon.icon [ Icon.Size IsSmall; Icon.IsLeft ]
                                         [ Fa.i [ icon ] [ ] ] ] ]
 
-let private row (name : string) (sla : string) (dependsOn : string) (entrypoint : bool) =
+let private row (name : string) (sla : string) (dependsOn : string) (entrypoint : bool) entrypointPresent =
+    let button color icon disabled =
+        Button.button [ Button.Color color; Button.Disabled disabled ] [ Fa.i [ icon ] [] ]
+    
     [
         Html.tableCell [ Html.strong [ Html.text name ] ]
         Html.tableCell [ Html.strong [ Html.text sla ] ]
         Html.tableCell [ Html.text dependsOn ]
         Html.tableCell [ Html.text (entrypoint.ToString()) ]
+        Html.tableCell [ Button.list [ Button.List.Option.HasAddons ] [
+            button IsSuccess Icon.Edit false
+            button IsDanger Icon.Ban false
+            button IsInfo Icon.ArrowUp (not entrypoint && entrypointPresent)
+        ] ]
     ] |>
     Html.tableRow
 
@@ -82,7 +90,7 @@ let private componentsTable model =
         let isEntryPoint =
             comp = model.EntryPoint.Value
         
-        row comp.Name sla dependsOn isEntryPoint
+        row comp.Name sla dependsOn isEntryPoint model.EntryPoint.IsSome
     
     Html.table [
         tableHeader [
@@ -90,6 +98,7 @@ let private componentsTable model =
             tableColumn "SLA"
             tableColumn "Depends on"
             tableColumn "Entry point"
+            tableColumn "Edit"
         ]
         
         Html.tableBody (
