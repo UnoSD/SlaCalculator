@@ -122,8 +122,9 @@ let private dependenciesBox model dispatch =
         yield! model.Components |> List.map createOption
     ] ]
 
-let private button dispatch name event =
+let private button dispatch color name event =
     Button.button [
+        Button.Color color
         Button.OnClick (fun _ -> dispatch event)
     ] [ str name ]
 
@@ -154,7 +155,7 @@ let private checkBox dispatch isChecked isDisabled text event =
     |> Field.div []
 
 let calculatorCard model dispatch =
-    let button = button dispatch
+    let button color = button dispatch color
     let componentsTable = componentsTable model
     let dependenciesBox = dependenciesBox model dispatch
     let textField = textField dispatch
@@ -174,11 +175,11 @@ let calculatorCard model dispatch =
         
         dependenciesBox
         
-        button "Add" ClickAdd
+        button IsPrimary "Add" ClickAdd
         
-        Button.button [] [ str "Export" ]
+        Button.button [ Button.Color IsSuccess ] [ str "Export" ]
         
-        Button.button [] [ str "Import" ]
+        Button.button [ Button.Color IsInfo ] [ str "Import" ]
         
         componentsTable
     ]
