@@ -171,7 +171,10 @@ let calculatorCard model dispatch =
     let isSlaValid = (Decimal.TryParse model.SLA |> fst)
     let totalsBox = Box.box' [] [ totals model ]
     let container (content : seq<ReactElement>) = card [ Html.div content ]
-    let entryPointSelector = checkBox dispatch model.IsEntryPoint model.EntryPoint.IsSome "Entrypoint" ToggleIsEntryPoint
+    
+    let entryPointSelector =
+        checkBox dispatch model.IsEntryPoint model.EntryPoint.IsSome "Entrypoint" ToggleIsEntryPoint
+    
     let editUpdateButton =
         match model.EditingComponent with
         | None   -> "Add"   , ClickAdd
@@ -191,7 +194,7 @@ let calculatorCard model dispatch =
         
         editUpdateButton
         
-        Button.button [ Button.Color IsSuccess ] [ str "Export" ]
+        button IsSuccess "Export" Export
         
         Button.button [ Button.Color IsInfo ] [ str "Import" ]
         

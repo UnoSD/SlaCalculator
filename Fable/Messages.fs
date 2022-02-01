@@ -13,3 +13,4 @@ type Message =
     | SetEntryPoint of Component
     | EditComponent of Component
     | DeleteComponent of Component
+    | Export

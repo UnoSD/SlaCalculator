@@ -4,6 +4,7 @@ open System
 open Elmish
 open SlaCalculator.Models
 open SlaCalculator.Messages
+open Thoth.Json
 
 let init _ =
     emptyModel, Cmd.none
@@ -74,6 +75,14 @@ let private withComponentEdit (comp : Component) model =
         Dependencies = comp.Dependencies |> List.map (function | Direct d -> d | _ -> failwith "Not implemented")
         EditingComponent = Some comp }
 
+let private exportState (model : Model) =
+    let anchor = Browser.Dom.document.createElement "a"
+    let json = Encode.Auto.toString(4, model, extra = (Extra.empty |> Extra.withDecimal))
+    let encodedContent = json |> sprintf "data:text/plain;charset=utf-8,%s" |> Fable.Core.JS.encodeURI
+    anchor.setAttribute("href", encodedContent)
+    anchor.setAttribute("download", "export.json")
+    anchor.click()
+
 let update message model =
     match message with    
     | ChangeToTab tab    -> { model with CurrentTab = tab }                       , Cmd.none
@@ -86,3 +95,4 @@ let update message model =
     | DeleteComponent co -> model |> withReplacementComponent co None             , Cmd.none
     | ClickAdd           -> model |> withComponentFromModel                       , Cmd.none
     | ClickUpdate comp   -> model |> withUpdatedComponentFromModel comp           , Cmd.none
+    | Export             -> exportState model; model                              , Cmd.none
