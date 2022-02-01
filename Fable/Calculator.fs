@@ -37,11 +37,11 @@ let private row dispatch (entrypoint : Component option) (comp : Component) =
         | Some ep -> comp = ep
         | None    -> false
     
-    let button color icon disabled =
+    let button color icon disabled onClick =
         Button.button [
             Button.Color color
             Button.Disabled disabled
-            Button.OnClick (fun _ -> comp |> SetEntryPoint |> dispatch)
+            Button.OnClick (fun _ -> onClick |> dispatch)
         ] [ Fa.i [ icon ] [] ]
     
     [
@@ -50,9 +50,9 @@ let private row dispatch (entrypoint : Component option) (comp : Component) =
         Html.tableCell [ Html.text dependsOn ]
         Html.tableCell [ Html.text (isEntrypoint.ToString()) ]
         Html.tableCell [ Button.list [ Button.List.Option.HasAddons ] [
-            button IsSuccess Icon.Edit false
-            button IsDanger Icon.Ban false
-            button IsInfo Icon.ArrowUp isEntrypoint
+            button IsSuccess Icon.Edit false (comp |> EditComponent)
+            button IsDanger Icon.Ban false (comp |> DeleteComponent)
+            button IsInfo Icon.ArrowUp isEntrypoint (comp |> SetEntryPoint)
         ] ]
     ] |>
     Html.tableRow
@@ -172,6 +172,11 @@ let calculatorCard model dispatch =
     let totalsBox = Box.box' [] [ totals model ]
     let container (content : seq<ReactElement>) = card [ Html.div content ]
     let entryPointSelector = checkBox dispatch model.IsEntryPoint model.EntryPoint.IsSome "Entrypoint" ToggleIsEntryPoint
+    let editUpdateButton =
+        match model.EditingComponent with
+        | None   -> "Add"   , ClickAdd
+        | Some c -> "Update", ClickUpdate c
+        ||> button IsPrimary
     
     container [
         totalsBox
@@ -184,7 +189,7 @@ let calculatorCard model dispatch =
         
         dependenciesBox
         
-        button IsPrimary "Add" ClickAdd
+        editUpdateButton
         
         Button.button [ Button.Color IsSuccess ] [ str "Export" ]
         

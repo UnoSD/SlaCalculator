@@ -14,14 +14,16 @@ and Dependency =
     | Distributed of Component list
 
 type Model = {
+    // Status
     CurrentTab : Tab
-    Components : Component list
-    
+    Components : Component list    
     EntryPoint : Component option
+    // Editor
     Name : string
     SLA : string
     IsEntryPoint : bool
     Dependencies : Component list
+    EditingComponent : Component option
 }
     
 let emptyModel = {
@@ -40,4 +42,5 @@ let emptyModel = {
     SLA = "0.0"
     IsEntryPoint = false
     Dependencies = []
+    EditingComponent = None
 }
