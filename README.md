@@ -4,6 +4,8 @@ Calculate composite SLA for solutions.
 
 # Web version
 
+The web version is available here: http://wiki.unosd.com/slacalculator/
+
 Let's insert the following reference architecture into the web UI of **SlaCalculator**:
 
 ![Example diagram](diagram.png)
