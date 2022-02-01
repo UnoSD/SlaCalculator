@@ -16,7 +16,6 @@ and Dependency =
 type Model = {
     CurrentTab : Tab
     Components : Component list
-    CompositeSLA : decimal option
     
     EntryPoint : Component option
     Name : string
@@ -26,6 +25,7 @@ type Model = {
 }
     
 let emptyModel = {
+    // Status
     CurrentTab = Calculator
     Components = [
         {
@@ -34,8 +34,8 @@ let emptyModel = {
             SLA = 99.9m
         }
     ]
-    CompositeSLA = None
     EntryPoint = None
+    // Editor
     Name = ""
     SLA = "0.0"
     IsEntryPoint = false

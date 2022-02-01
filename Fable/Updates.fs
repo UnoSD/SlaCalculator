@@ -22,11 +22,8 @@ let withComponentFromModel model =
         | false   -> model.EntryPoint
         
     { emptyModel with
-        Components   = newComponent :: model.Components
-        EntryPoint   = entryPoint
-        CompositeSLA = match entryPoint with
-                       | None    -> None
-                       | Some ep -> calculateCompositeSla ep |> Some }
+        Components = newComponent :: model.Components
+        EntryPoint = entryPoint }
 
 let private toggleDependency model comp =
     match model.Dependencies |> List.contains comp with
@@ -38,6 +35,7 @@ let update message model =
     | ChangeToTab tab    -> { model with CurrentTab = tab }                       , Cmd.none
     | ChangeName name    -> { model with Name = name }                            , Cmd.none
     | ChangeSLA sla      -> { model with SLA = sla }                              , Cmd.none
-    | ChangeIsEntryPoint -> { model with IsEntryPoint = not model.IsEntryPoint }  , Cmd.none
+    | ToggleIsEntryPoint -> { model with IsEntryPoint = not model.IsEntryPoint }  , Cmd.none
     | ToggleDependency d -> { model with Dependencies = toggleDependency model d }, Cmd.none
+    | SetEntryPoint comp -> { model with EntryPoint = Some comp }                 , Cmd.none
     | ClickAdd           -> model |> withComponentFromModel                       , Cmd.none

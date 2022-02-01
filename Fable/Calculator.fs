@@ -9,6 +9,7 @@ open SlaCalculator.Helpers
 open SlaCalculator.Models
 open SlaCalculator.Messages
 open Fable.React
+open SlaCalculator.Calculate
 
 module Icon = Free.Fa.Solid
 
@@ -20,19 +21,38 @@ let private iconField (labelText : string) icon input =
                               Icon.icon [ Icon.Size IsSmall; Icon.IsLeft ]
                                         [ Fa.i [ icon ] [ ] ] ] ]
 
-let private row (name : string) (sla : string) (dependsOn : string) (entrypoint : bool) entrypointPresent =
+let private row dispatch (entrypoint : Component option) (comp : Component) =
+    let sla =
+        comp.SLA.ToString()
+        
+    let dependsOn =
+        comp.Dependencies
+        |> List.map (function
+                     | Distributed _  -> "db"
+                     | Direct      lx -> lx.Name)
+        |> String.concat ", "
+    
+    let isEntrypoint =
+        match entrypoint with
+        | Some ep -> comp = ep
+        | None    -> false
+    
     let button color icon disabled =
-        Button.button [ Button.Color color; Button.Disabled disabled ] [ Fa.i [ icon ] [] ]
+        Button.button [
+            Button.Color color
+            Button.Disabled disabled
+            Button.OnClick (fun _ -> comp |> SetEntryPoint |> dispatch)
+        ] [ Fa.i [ icon ] [] ]
     
     [
-        Html.tableCell [ Html.strong [ Html.text name ] ]
+        Html.tableCell [ Html.strong [ Html.text comp.Name ] ]
         Html.tableCell [ Html.strong [ Html.text sla ] ]
         Html.tableCell [ Html.text dependsOn ]
-        Html.tableCell [ Html.text (entrypoint.ToString()) ]
+        Html.tableCell [ Html.text (isEntrypoint.ToString()) ]
         Html.tableCell [ Button.list [ Button.List.Option.HasAddons ] [
             button IsSuccess Icon.Edit false
             button IsDanger Icon.Ban false
-            button IsInfo Icon.ArrowUp (not entrypoint && entrypointPresent)
+            button IsInfo Icon.ArrowUp isEntrypoint
         ] ]
     ] |>
     Html.tableRow
@@ -47,16 +67,21 @@ let private tableHeader (content : ReactElement list) =
     Html.thead [ Html.tableRow content ]
 
 let private totals model =
+    let compositeSla =
+        match model.EntryPoint with
+        | None    -> None
+        | Some ep -> calculateCompositeSla ep |> Some
+    
     let level =
         Level.level [ ]
         
     let downtimeHoursPerYear =
-        match model.CompositeSLA with
+        match compositeSla with
         | Some sla -> (100m - sla) * 365m * 24m / 100m |> sprintf "%f hours"
         | None     -> "Missing entrypoint"
     
     let compositeSla =
-        match model.CompositeSLA with
+        match compositeSla with
         | Some sla -> sprintf "%f%%" sla
         | None     -> "Missing entrypoint"
     
@@ -75,23 +100,7 @@ let private totals model =
         tile "Downtime per year" downtimeHoursPerYear
     ]
 
-let private componentsTable model =
-    let componentRow (comp : Component) =
-        let sla =
-            comp.SLA.ToString()
-            
-        let dependsOn =
-            comp.Dependencies
-            |> List.map (function
-                         | Distributed _  -> "db"
-                         | Direct      lx -> lx.Name)
-            |> String.concat ", "
-        
-        let isEntryPoint =
-            comp = model.EntryPoint.Value
-        
-        row comp.Name sla dependsOn isEntryPoint model.EntryPoint.IsSome
-    
+let private componentsTable model dispatch =
     Html.table [
         tableHeader [
             tableColumn "Name"
@@ -102,7 +111,7 @@ let private componentsTable model =
         ]
         
         Html.tableBody (
-            List.map componentRow model.Components
+            List.map (row dispatch model.EntryPoint) model.Components
         )
     ]
 
@@ -156,13 +165,13 @@ let private checkBox dispatch isChecked isDisabled text event =
 
 let calculatorCard model dispatch =
     let button color = button dispatch color
-    let componentsTable = componentsTable model
+    let componentsTable = componentsTable model dispatch
     let dependenciesBox = dependenciesBox model dispatch
     let textField = textField dispatch
     let isSlaValid = (Decimal.TryParse model.SLA |> fst)
     let totalsBox = Box.box' [] [ totals model ]
     let container (content : seq<ReactElement>) = card [ Html.div content ]
-    let entryPointSelector = checkBox dispatch model.IsEntryPoint model.EntryPoint.IsSome "Entrypoint" ChangeIsEntryPoint
+    let entryPointSelector = checkBox dispatch model.IsEntryPoint model.EntryPoint.IsSome "Entrypoint" ToggleIsEntryPoint
     
     container [
         totalsBox

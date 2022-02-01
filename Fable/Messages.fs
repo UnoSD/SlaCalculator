@@ -7,5 +7,6 @@ type Message =
     | ChangeName of string
     | ChangeSLA of string
     | ClickAdd
-    | ChangeIsEntryPoint
+    | ToggleIsEntryPoint
     | ToggleDependency of Component
+    | SetEntryPoint of Component
