@@ -22,7 +22,7 @@ type Model = {
     Name : string
     SLA : string
     IsEntryPoint : bool
-    Dependencies : Component list
+    Dependencies : Dependency list
     EditingComponent : Component option
 }
     

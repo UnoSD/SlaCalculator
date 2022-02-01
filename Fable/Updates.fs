@@ -13,7 +13,7 @@ let private withComponentFromModel model =
     let newComponent = {
         Name = model.Name
         SLA = Decimal.Parse model.SLA
-        Dependencies = model.Dependencies |> List.map Direct
+        Dependencies = model.Dependencies
     }
 
     let entryPoint = 
@@ -25,10 +25,16 @@ let private withComponentFromModel model =
         Components = newComponent :: model.Components
         EntryPoint = entryPoint }
 
-let private toggleDependency model comp =
-    match model.Dependencies |> List.contains comp with
-    | true  -> model.Dependencies |> List.except [comp]
-    | false -> comp :: model.Dependencies
+let private toggleDependency model dep =
+    match dep, model.Dependencies |> List.contains dep with
+    | Direct _, true     -> model.Dependencies |> List.except [dep]
+    | Direct _, false    -> dep :: model.Dependencies
+    | Distributed [x], _ -> model.Dependencies
+                            |> List.choose (function
+                                            | Direct d                   -> Direct d |> Some
+                                            | Distributed [d] when d = x -> None
+                                            | Distributed dps            -> List.except [x] dps |> Distributed |> Some)
+    | _                  -> failwith "The view should only send single item list of distributed dependencies"
 
 let private withReplacementComponent comp replacement model =
     let rec removeComponent components =
@@ -62,7 +68,7 @@ let private withUpdatedComponentFromModel comp model =
     let updatedComponent = Some {
         Name = model.Name
         SLA = Decimal.Parse model.SLA
-        Dependencies = model.Dependencies |> List.map Direct
+        Dependencies = model.Dependencies
     }
 
     withReplacementComponent comp updatedComponent model
@@ -72,7 +78,7 @@ let private withComponentEdit (comp : Component) model =
         Name = comp.Name
         SLA = comp.SLA.ToString()
         IsEntryPoint = model.EntryPoint |> Option.map (fun c -> c = comp) |> Option.defaultValue false
-        Dependencies = comp.Dependencies |> List.map (function | Direct d -> d | _ -> failwith "Not implemented")
+        Dependencies = comp.Dependencies
         EditingComponent = Some comp }
 
 let private exportState (model : Model) =

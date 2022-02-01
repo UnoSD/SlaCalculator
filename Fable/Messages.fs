@@ -9,7 +9,7 @@ type Message =
     | ClickAdd
     | ClickUpdate of Component
     | ToggleIsEntryPoint
-    | ToggleDependency of Component
+    | ToggleDependency of Dependency
     | SetEntryPoint of Component
     | EditComponent of Component
     | DeleteComponent of Component

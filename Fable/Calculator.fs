@@ -115,17 +115,34 @@ let private componentsTable model dispatch =
         )
     ]
 
-let private dependenciesBox model dispatch =
+type private DependencyTypeSelector =
+    | DirectDependency
+    | DistributedDependency
+
+let private dependenciesBox model dispatch dependencyType dependencyTypeSelector =
     let createOption (comp : Component) =
         option [
             // To prevent flickering when selecting dependencies, we can try and keep the original order
-            OnClick (fun _ -> comp |> ToggleDependency |> dispatch)
+            OnClick (fun _ -> dependencyType comp |> ToggleDependency |> dispatch)
         ] [ str comp.Name ]
+    
+    let dependenciesBySelector dep =
+        match dependencyTypeSelector, dep with
+        | DirectDependency, Direct x            -> [ x.Name ]
+        | DistributedDependency, Distributed xs -> xs |> List.map (fun x -> x.Name)
+        | _                                     -> []
+    
+    let boxTitle = 
+        match dependencyTypeSelector with
+        | DirectDependency      -> "Direct dependencies"
+        | DistributedDependency -> "Distributed dependencies"
     
     Select.select [
         Select.IsMultiple
-    ] [ select [ Multiple true
-                 ValueMultiple (model.Dependencies |> List.map (fun c -> c.Name) |> Array.ofList)
+        Select.IsFullWidth
+    ] [ str boxTitle
+        select [ Multiple true
+                 ValueMultiple (model.Dependencies |> List.collect dependenciesBySelector |> Array.ofList)
                  ReadOnly true
                  Size 4. ] [
         yield! model.Components |> List.map createOption
@@ -192,7 +209,11 @@ let private checkBox dispatch isChecked isDisabled text event =
 let calculatorCard model dispatch =
     let button color = button dispatch color
     let componentsTable = componentsTable model dispatch
-    let dependenciesBox = dependenciesBox model dispatch
+    let directDependenciesBox = dependenciesBox model dispatch Direct DirectDependency
+    // We need the ability to add multiple distributed dependencies box per component
+    // Imagine the Web App relies on two SB queues primary/secondary and on two Redis caches primary/secondary
+    // And does in-code retries with fallback
+    let distributedDependenciesBox = dependenciesBox model dispatch (List.singleton >> Distributed) DistributedDependency
     let textField = textField dispatch
     let isSlaValid = (Decimal.TryParse model.SLA |> fst)
     let totalsBox = Box.box' [] [ totals model ]
@@ -216,7 +237,9 @@ let calculatorCard model dispatch =
         
         entryPointSelector
         
-        dependenciesBox
+        directDependenciesBox
+        
+        distributedDependenciesBox
         
         editUpdateButton
         
