@@ -180,11 +180,12 @@ let private fileButton dispatch color name =
         str name
     ]
 
-let private textField dispatch value isValid label icon event =
+let private textField dispatch value isValid label placeholder icon event =
     Input.text [
         if isValid then () else Input.Color Color.IsDanger
         Input.OnChange (fun ev -> ev.Value |> event |> dispatch)
         Input.Value value
+        Input.Placeholder placeholder
     ]
     |> iconField label icon
 
@@ -231,9 +232,9 @@ let calculatorCard model dispatch =
     container [
         totalsBox
         
-        textField model.Name true "Name" Icon.Atom ChangeName
+        textField model.Name true "Name" "Ex: Azure Front Door" Icon.Atom ChangeName
         
-        textField model.SLA isSlaValid "SLA" Icon.Ambulance ChangeSLA
+        textField model.SLA isSlaValid "SLA" "Ex: 99.99" Icon.Ambulance ChangeSLA
         
         entryPointSelector
         
