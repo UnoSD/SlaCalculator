@@ -14,3 +14,5 @@ type Message =
     | EditComponent of Component
     | DeleteComponent of Component
     | Export
+    | CompletedImport of string
+    | FailedImport

@@ -83,6 +83,11 @@ let private exportState (model : Model) =
     anchor.setAttribute("download", "export.json")
     anchor.click()
 
+let private importState json oldState =
+    match Decode.Auto.fromString<Model>(json, extra = (Extra.empty |> Extra.withDecimal)) with
+    | Ok newState -> newState
+    | Error error -> printfn "%s" error; oldState
+
 let update message model =
     match message with    
     | ChangeToTab tab    -> { model with CurrentTab = tab }                       , Cmd.none
@@ -96,3 +101,5 @@ let update message model =
     | ClickAdd           -> model |> withComponentFromModel                       , Cmd.none
     | ClickUpdate comp   -> model |> withUpdatedComponentFromModel comp           , Cmd.none
     | Export             -> exportState model; model                              , Cmd.none
+    | CompletedImport dx -> importState dx model                                  , Cmd.none
+    | FailedImport       -> printfn "Import failed"; model                        , Cmd.none

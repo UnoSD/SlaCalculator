@@ -136,6 +136,32 @@ let private button dispatch color name event =
         Button.Color color
         Button.OnClick (fun _ -> dispatch event)
     ] [ str name ]
+    
+let private fileButton dispatch color name =
+    Button.button [
+        Button.Color color
+    ] [
+        File.input [
+            Props [
+                OnInput (fun ev ->
+                    let target = ev.target :?> Browser.Types.HTMLInputElement
+                    
+                    match target.files.length with
+                    | 1 -> let reader = Browser.Dom.FileReader.Create()
+
+                           reader.onload <- (fun evt ->
+                               let target = evt.target :?> Browser.Types.FileReader
+                               target.result |> string |> CompletedImport |> dispatch)
+
+                           reader.onerror <- (fun _ -> dispatch FailedImport)
+
+                           reader.readAsText(target.files.[0])
+                    | _ -> ()
+                )
+            ]
+        ]
+        str name
+    ]
 
 let private textField dispatch value isValid label icon event =
     Input.text [
@@ -196,7 +222,7 @@ let calculatorCard model dispatch =
         
         button IsSuccess "Export" Export
         
-        Button.button [ Button.Color IsInfo ] [ str "Import" ]
+        fileButton dispatch IsInfo "Import"
         
         componentsTable
     ]
