@@ -16,3 +16,6 @@ type Message =
     | Export
     | CompletedImport of string
     | FailedImport
+    | Reset
+    | LoadExample
+    | CancelEdit

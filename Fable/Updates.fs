@@ -94,6 +94,14 @@ let private importState json oldState =
     | Ok newState -> newState
     | Error error -> printfn "%s" error; oldState
 
+let private cancelEditing model =
+    { model with
+        Name = ""
+        SLA = "0.0"
+        IsEntryPoint = false
+        Dependencies = []
+        EditingComponent = None }
+
 let update message model =
     match message with    
     | ChangeToTab tab    -> { model with CurrentTab = tab }                       , Cmd.none
@@ -109,3 +117,6 @@ let update message model =
     | Export             -> exportState model; model                              , Cmd.none
     | CompletedImport dx -> importState dx model                                  , Cmd.none
     | FailedImport       -> printfn "Import failed"; model                        , Cmd.none
+    | Reset              -> emptyModel                                            , Cmd.none
+    | LoadExample        -> exampleModel                                          , Cmd.none
+    | CancelEdit         -> cancelEditing model                                   , Cmd.none

@@ -247,5 +247,13 @@ let calculatorCard model dispatch =
         
         fileButton dispatch IsInfo "Import"
         
+        button IsLink "Load example" LoadExample
+        
+        model.EditingComponent
+        |> Option.map (fun _ -> button IsWarning "Cancel edit" CancelEdit)
+        |> Option.defaultValue Html.none
+        
+        button IsDanger "Reset" Reset
+        
         componentsTable
     ]
