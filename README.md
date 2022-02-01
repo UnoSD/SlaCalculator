@@ -6,11 +6,11 @@ Calculate composite SLA for solutions.
 
 Let's insert the following reference architecture into the web UI of **SlaCalculator**:
 
-![Example diagram](example diagram.png)
+![Example diagram](diagram.png)
 
 It will look like this:
 
-![Example diagram](example.png)
+![Example](example.png)
 
 * Entrypoint is set to **Azure Front Door** as the users will connect to that endpoint and the composite SLA will be calculated from that service
 * **Azure Front Door** has a **distributed** dependency on two **App Services**; a distributed dependency means that the two service are redundant and if one fails, the other will continue to work, this increases the SLA of a single **App Service**
