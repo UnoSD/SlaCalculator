@@ -28,8 +28,8 @@ let private row dispatch (entrypoint : Component option) (comp : Component) =
     let dependsOn =
         comp.Dependencies
         |> List.map (function
-                     | Distributed _  -> "db"
-                     | Direct      lx -> lx.Name)
+                     | Distributed ds -> ds |> List.map (fun ds -> ds.Name) |> String.concat ", " |> sprintf "{%s}"
+                     | Direct      dd -> sprintf "%s" dd.Name)
         |> String.concat ", "
     
     let isEntrypoint =
