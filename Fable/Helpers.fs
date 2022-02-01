@@ -5,7 +5,7 @@ open Fable.React
 open Fulma
 
 let card content footer =
-    Card.card [ ]
+    Card.card [ GenericOption.Modifiers [ Modifier.Spacing (Spacing.Margin, Spacing.Is6) ] ]
               [ Card.content [ ]
                              [ Content.content [] content
                                footer ] ]
