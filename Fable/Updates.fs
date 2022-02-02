@@ -36,29 +36,6 @@ let private toggleDependency model dep =
                                             | Distributed dps            -> List.except [x] dps |> Distributed |> Some)
     | _                  -> failwith "The view should only send single item list of distributed dependencies"
 
-    //let rec removeComponent components =
-    //    let rec removeDepsComponent comp (from : Component) =
-    //        from.Dependencies
-    //        |> List.choose (function
-    //                        | Distributed cs         -> match cs with
-    //                                                    | [  ]                -> failwith ("Distributed dependency " +
-    //                                                                                       "on no component, " +
-    //                                                                                       "state is corrupted")
-    //                                                    | [co] when co = comp -> replacement |> Option.map (List.singleton
-    //                                                                                                        >> Distributed)
-    //                                                    |  cs                 -> cs
-    //                                                                             |> List.except [comp]
-    //                                                                             |> List.map (removeDepsComponent comp) // Non tail recursive and warning
-    //                                                                             |> Distributed
-    //                                                                             |> Some
-    //                        | Direct d when d = comp -> Option.map Direct replacement
-    //                        | Direct d               -> removeDepsComponent comp d |> Direct |> Some) // Non tail recursive and warning
-    //    
-    //    match components with
-    //    | []                    -> []
-    //    | x :: xs when comp = x -> (replacement |> Option.toList) @ removeComponent xs  
-    //    | x :: xs               -> removeDepsComponent comp x :: removeComponent xs  
-
 let rec private replaceComponent oldComponent newComponent (components : Component list) : Component list =
     let rec replaceDependencies (dependencies : Dependency list) oldComponent newComponent : Dependency list =
         let replace oldComponent newComponent =
