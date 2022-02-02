@@ -36,46 +36,70 @@ let private toggleDependency model dep =
                                             | Distributed dps            -> List.except [x] dps |> Distributed |> Some)
     | _                  -> failwith "The view should only send single item list of distributed dependencies"
 
-let private withReplacementComponent comp replacement model =
-    let rec removeComponent components =
-        let rec removeDepsComponent =
-            List.choose (function
-                        | Distributed cs         -> match cs with
-                                                    | [  ]                -> failwith ("Distributed dependency " +
-                                                                                       "on no component, " +
-                                                                                       "state is corrupted")
-                                                    | [co] when co = comp -> replacement |> Option.map (List.singleton
-                                                                                                        >> Distributed)
-                                                    |  cs                 -> cs
-                                                                             |> List.except [comp]
-                                                                             |> List.map (fun d -> { d with Dependencies = removeDepsComponent d.Dependencies }) // Non tail recursive and warning
-                                                                             |> Distributed
-                                                                             |> Some
-                        | Direct d when d = comp -> Option.map Direct replacement
-                        | Direct d               -> { d with Dependencies = removeDepsComponent d.Dependencies } |> Direct |> Some) // Non tail recursive and warning
-        
-        match components with
-        | []                    -> []
-        | x :: xs when comp = x -> (replacement |> Option.toList) @ removeComponent xs  
-        | x :: xs               -> { x with Dependencies = removeDepsComponent x.Dependencies } :: removeComponent xs  
-    
-    { model with
-        Components = model.Components |> removeComponent
-        EntryPoint = match model.EntryPoint with
-                     | Some c when c = comp -> replacement
-                     | _                    -> match model.EntryPoint with
-                                               | Some ep -> removeComponent [ ep ] |> List.exactlyOne |> Some
-                                               | None    -> None }
+    //let rec removeComponent components =
+    //    let rec removeDepsComponent comp (from : Component) =
+    //        from.Dependencies
+    //        |> List.choose (function
+    //                        | Distributed cs         -> match cs with
+    //                                                    | [  ]                -> failwith ("Distributed dependency " +
+    //                                                                                       "on no component, " +
+    //                                                                                       "state is corrupted")
+    //                                                    | [co] when co = comp -> replacement |> Option.map (List.singleton
+    //                                                                                                        >> Distributed)
+    //                                                    |  cs                 -> cs
+    //                                                                             |> List.except [comp]
+    //                                                                             |> List.map (removeDepsComponent comp) // Non tail recursive and warning
+    //                                                                             |> Distributed
+    //                                                                             |> Some
+    //                        | Direct d when d = comp -> Option.map Direct replacement
+    //                        | Direct d               -> removeDepsComponent comp d |> Direct |> Some) // Non tail recursive and warning
+    //    
+    //    match components with
+    //    | []                    -> []
+    //    | x :: xs when comp = x -> (replacement |> Option.toList) @ removeComponent xs  
+    //    | x :: xs               -> removeDepsComponent comp x :: removeComponent xs  
 
-let private withUpdatedComponentFromModel comp model =
-    let updatedComponent = Some {
+let rec private replaceComponent oldComponent newComponent (components : Component list) : Component list =
+    let rec replaceDependencies (dependencies : Dependency list) oldComponent newComponent : Dependency list =
+        let replace oldComponent newComponent =
+            function
+            | Direct d when d = oldComponent -> Direct newComponent
+            | Direct d                       -> { d with Dependencies = replaceDependencies d.Dependencies oldComponent newComponent }
+                                                |> Direct // Non-tail recursion
+                                                    
+            | Distributed []                              -> failwith "Empty distributed dep"
+            | Distributed [d] when d = oldComponent       -> Distributed [newComponent]
+            | Distributed (d :: ds) when d = oldComponent -> newComponent :: replaceComponent oldComponent newComponent ds |> Distributed // Non-tail recursion
+            | Distributed (d :: ds)                       -> { d with Dependencies = replaceDependencies d.Dependencies oldComponent newComponent } ::
+                                                             replaceComponent oldComponent newComponent ds |> Distributed // Non-tail recursion
+        
+        dependencies
+        |> List.map (replace oldComponent newComponent)
+    
+    match components with
+    | [] -> []
+    | [x] when x = oldComponent     -> [newComponent] // I don't think we need to check dependencies, if it depends on itself it's a circular dependency and would be an infinite loop anyway (avoid this in code as it could be possible)
+    | [x]                           -> [ { x with Dependencies = replaceDependencies x.Dependencies oldComponent newComponent } ]
+    | x :: xs when x = oldComponent -> newComponent :: replaceComponent oldComponent newComponent xs // Non-tail recursion
+    | x :: xs                       -> { x with Dependencies = replaceDependencies x.Dependencies oldComponent newComponent } ::
+                                       replaceComponent oldComponent newComponent xs // Non-tail recursion
+
+let private withReplacementComponent oldComponent newComponent model =
+    { model with
+        Components = model.Components |> replaceComponent oldComponent newComponent
+        EntryPoint = Option.map (List.singleton
+                                 >> replaceComponent oldComponent newComponent
+                                 >> List.head) model.EntryPoint }
+
+let private withUpdatedComponentFromModel oldComponent model =
+    let newComponent = {
         Name = model.Name
         SLA = Decimal.Parse model.SLA
         Dependencies = model.Dependencies
     }
 
     let replacedComponentModel =
-        withReplacementComponent comp updatedComponent model
+        withReplacementComponent oldComponent newComponent model
         
     { replacedComponentModel with
         Name = ""
@@ -113,6 +137,32 @@ let private cancelEditing model =
         Dependencies = []
         EditingComponent = None }
 
+let private withoutComponent toRemove model =
+    let rec removeDependency toRemove dependencies : Dependency list =
+        dependencies
+        |> List.filter (function
+                        | Direct d        -> d <> toRemove
+                        | Distributed []  -> failwith "Empty distributed dependency"
+                        | Distributed [x] -> x <> toRemove
+                        | _               -> true)
+        |> List.map (function
+                     | Distributed (_ :: _ :: _) & Distributed ds -> ds
+                                                                     |> List.filter ((<>)toRemove)
+                                                                     |> List.map (fun d -> { d with Dependencies = removeDependency toRemove d.Dependencies })
+                                                                     |> Distributed
+                     | x -> x)
+    
+    let removeEntrypoint (ep : Component) =
+        if ep = toRemove then
+            None
+        else
+            Some { ep with Dependencies = removeDependency toRemove ep.Dependencies }
+    
+    { model with
+        Components = List.filter ((<>)toRemove) model.Components
+                     |> List.map (fun c -> { c with Dependencies = removeDependency toRemove c.Dependencies })
+        EntryPoint = Option.bind removeEntrypoint model.EntryPoint }
+
 let update message model =
     match message with    
     | ChangeToTab tab    -> { model with CurrentTab = tab }                       , Cmd.none
@@ -122,7 +172,7 @@ let update message model =
     | ToggleDependency d -> { model with Dependencies = toggleDependency model d }, Cmd.none
     | SetEntryPoint comp -> { model with EntryPoint = Some comp }                 , Cmd.none
     | EditComponent comp -> model |> withComponentEdit comp                       , Cmd.none
-    | DeleteComponent co -> model |> withReplacementComponent co None             , Cmd.none
+    | DeleteComponent co -> model |> withoutComponent co                          , Cmd.none
     | ClickAdd           -> model |> withComponentFromModel                       , Cmd.none
     | ClickUpdate comp   -> model |> withUpdatedComponentFromModel comp           , Cmd.none
     | Export             -> exportState model; model                              , Cmd.none
