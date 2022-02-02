@@ -71,7 +71,15 @@ let private withUpdatedComponentFromModel comp model =
         Dependencies = model.Dependencies
     }
 
-    withReplacementComponent comp updatedComponent model
+    let replacedComponentModel =
+        withReplacementComponent comp updatedComponent model
+        
+    { replacedComponentModel with
+        Name = ""
+        SLA = ""
+        IsEntryPoint = false
+        Dependencies = []
+        EditingComponent = None }
 
 let private withComponentEdit (comp : Component) model =
     { model with
