@@ -14,6 +14,11 @@ let private withComponentFromModel model =
         Name = model.Name
         SLA = Decimal.Parse model.SLA
         Dependencies = model.Dependencies
+                       |> List.partition (function | Direct _ -> true | Distributed _ -> false)
+                       |> (fun (direct, distributed) -> (distributed
+                                                         |> List.collect (function | Distributed x -> x | _ -> failwith "Impossible")
+                                                         |> Distributed) :: direct)
+                       |> List.filter (function | Distributed [] -> false | _ -> true)
     }
 
     let entryPoint = 
@@ -29,11 +34,16 @@ let private toggleDependency model dep =
     match dep, model.Dependencies |> List.contains dep with
     | Direct _, true     -> model.Dependencies |> List.except [dep]
     | Direct _, false    -> dep :: model.Dependencies
-    | Distributed [x], _ -> model.Dependencies
-                            |> List.choose (function
-                                            | Direct d                   -> Direct d |> Some
-                                            | Distributed [d] when d = x -> None
-                                            | Distributed dps            -> List.except [x] dps |> Distributed |> Some)
+    | Distributed [x], _ -> let currentDependencies = model.Dependencies
+                            let updatedDependencies = 
+                                model.Dependencies
+                                |> List.choose (function
+                                                | Distributed [d] when d = x -> None
+                                                | Distributed dps            -> List.except [x] dps |> Distributed |> Some
+                                                | d                          -> Some d)
+                            match currentDependencies = updatedDependencies with
+                            | true  -> dep :: model.Dependencies
+                            | false -> updatedDependencies
     | _                  -> failwith "The view should only send single item list of distributed dependencies"
 
 let rec private replaceComponent oldComponent newComponent (components : Component list) : Component list =
