@@ -38,7 +38,7 @@ let private toggleDependency model dep =
 
 let private withReplacementComponent comp replacement model =
     let rec removeComponent components =
-        let removeDepsComponent =
+        let rec removeDepsComponent =
             List.choose (function
                         | Distributed cs         -> match cs with
                                                     | [  ]                -> failwith ("Distributed dependency " +
@@ -48,10 +48,11 @@ let private withReplacementComponent comp replacement model =
                                                                                                         >> Distributed)
                                                     |  cs                 -> cs
                                                                              |> List.except [comp]
+                                                                             |> List.map (fun d -> { d with Dependencies = removeDepsComponent d.Dependencies }) // Non tail recursive and warning
                                                                              |> Distributed
                                                                              |> Some
                         | Direct d when d = comp -> Option.map Direct replacement
-                        | dep                    -> Some dep)
+                        | Direct d               -> { d with Dependencies = removeDepsComponent d.Dependencies } |> Direct |> Some) // Non tail recursive and warning
         
         match components with
         | []                    -> []
@@ -62,7 +63,9 @@ let private withReplacementComponent comp replacement model =
         Components = model.Components |> removeComponent
         EntryPoint = match model.EntryPoint with
                      | Some c when c = comp -> replacement
-                     | _                    -> model.EntryPoint }
+                     | _                    -> match model.EntryPoint with
+                                               | Some ep -> removeComponent [ ep ] |> List.exactlyOne |> Some
+                                               | None    -> None }
 
 let private withUpdatedComponentFromModel comp model =
     let updatedComponent = Some {
