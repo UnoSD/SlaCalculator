@@ -1,17 +1,17 @@
 module SlaCalculator.Calculator
 
-open System
-open Fable.FontAwesome
-open Fable.Import
-open Fable.React.Props
 open Feliz
 open Fulma
+open System
+open Fable.React
+open Fable.Import
+open Fable.FontAwesome
+open Fable.React.Props
 open SlaCalculator.Helpers
 open SlaCalculator.Models
 open SlaCalculator.Messages
-open Fable.React
-open Fable.Core.JsInterop
 open SlaCalculator.Calculate
+open SlaCalculator.VisNetwork
 
 module Icon = Free.Fa.Solid
 
@@ -209,29 +209,6 @@ let private checkBox dispatch isChecked isDisabled text event =
     |> List.singleton
     |> Field.div []
 
-(*
-    {
-        id: 1,
-        label: "Main",
-        image: "Network-Pipe-icon.png",
-        shape: "image",
-    }
-*)
-type Node = 
-  abstract id : int with get, set
-  abstract label : string with get, set
-  abstract image : string with get, set
-  abstract shape : string with get, set
-
-let parameter = createEmpty<Node>
-
-parameter.id    <- 1
-parameter.label <- "Main"
-parameter.image <- "Network-Pipe-icon.png"
-parameter.shape <- "image"
-
-let createDiagram (nodes : obj []) (edges : obj []) = import "createDiagram" "./VisNetwork.js" 
-
 let calculatorCard model dispatch =
     let button color = button dispatch color
     let componentsTable = componentsTable model dispatch
@@ -253,18 +230,6 @@ let calculatorCard model dispatch =
         | None   -> "Add"   , ClickAdd
         | Some c -> "Update", ClickUpdate c
         ||> button IsPrimary
-    
-    let node =
-        createObj [
-            "id"    ==> 1
-            "label" ==> "Main"
-            "image" ==> "Network-Pipe-icon.png"
-            "shape" ==> "image"
-        ]
-    
-    //let createDiagram : obj list -> obj list -> unit = import "createDiagram" "./VisNetwork.js" 
-    
-    //Browser.Dom.console.log([|node|])
     
     container [
         totalsBox
@@ -298,6 +263,6 @@ let calculatorCard model dispatch =
         Html.div [ prop.id "mynetwork"; prop.style [ Feliz.style.width(length.auto); Feliz.style.height(600) ] ]
         
         Button.button [
-            Button.OnClick (fun _ -> createDiagram [| node |] [||])
+            Button.OnClick (fun _ -> createDiagram [| networkNode |] [||])
         ] [ str "TEST" ]
     ]
