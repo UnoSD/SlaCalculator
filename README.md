@@ -22,6 +22,12 @@ Play with the arrow button on each service to understand what the SLA would look
 
 The overall SLA of the solution is higher than the **App Service** as they are redundant, but it's lower than **Azure Front Door** and **Azure SQL** as they are in sequence without redundancy. 
 
+# Diagrams
+
+![In-app diagrams](in-app diagrams.png)
+
+The calculator draws a diagram of the component as you add them to the list. Currently only supports **Azure** icons and tries to match the name of the component de-pluralizing and removing characters. Better icons matching and other clouds will be added later.
+
 # Script version
 
 Add the components following the example to `main.fsx` and run the script to get the results.
