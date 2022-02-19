@@ -7,6 +7,8 @@
     <Compile Include="Helpers.fs" />
     <Compile Include="Messages.fs" />
     <Compile Include="Calculate.fs" />
+    <Compile Include="Icons.fs" />
+    <Compile Include="VisNetwork.fs" />
     <Compile Include="Calculator.fs" />
     <Compile Include="About.fs" />
     <Compile Include="Page.fs" />
@@ -24,6 +26,7 @@
     <None Include="paket.lock" />
     <None Include="paket.references" />
     <None Include="webpack.config.js" />
+    <Content Include="VisNetwork.js" />
   </ItemGroup>
   <Import Project=".paket\Paket.Restore.targets" />
 </Project>

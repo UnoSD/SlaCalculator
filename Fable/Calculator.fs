@@ -1,14 +1,15 @@
 module SlaCalculator.Calculator
 
-open System
-open Fable.FontAwesome
-open Fable.React.Props
 open Feliz
 open Fulma
+open System
+open Fable.React
+open Fable.Import
+open Fable.FontAwesome
+open Fable.React.Props
 open SlaCalculator.Helpers
 open SlaCalculator.Models
 open SlaCalculator.Messages
-open Fable.React
 open SlaCalculator.Calculate
 
 module Icon = Free.Fa.Solid
@@ -257,4 +258,6 @@ let calculatorCard model dispatch =
         button IsDanger "Reset" Reset
         
         componentsTable
+        
+        Html.div [ prop.id "mynetwork"; prop.style [ Feliz.style.width(length.auto); Feliz.style.height(600) ] ]
     ]

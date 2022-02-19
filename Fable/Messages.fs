@@ -19,3 +19,4 @@ type Message =
     | Reset
     | LoadExample
     | CancelEdit
+    | UpdateDiagram
