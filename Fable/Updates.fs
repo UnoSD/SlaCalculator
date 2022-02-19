@@ -5,6 +5,7 @@ open Elmish
 open SlaCalculator.Models
 open SlaCalculator.Messages
 open Thoth.Json
+open VisNetwork
 
 let init _ =
     emptyModel, Cmd.none
@@ -150,21 +151,70 @@ let private withoutComponent toRemove model =
                      |> List.map (fun c -> { c with Dependencies = removeDependency toRemove c.Dependencies })
         EntryPoint = Option.bind removeEntrypoint model.EntryPoint }
 
+let private updateDiagramFromModel components =    
+    let rec getIcon (name : string) =
+        Map.tryFindKey (fun k _ -> name.Contains(k)) Icons.Azure.iconsMap
+        |> Option.map (fun k -> Map.find k Icons.Azure.iconsMap)
+        |> Option.defaultValue "Azure/General/10001-icon-service-All-Resources.svg"
+    
+    let createNode (comp : Component) =
+        let sanitizedName (name : string) =
+            name.Replace("es ", "")
+                .Replace("s ", "")
+                .Replace(" ", "")
+                .ToLowerInvariant()
+                .Replace("azure", "")
+                .Replace("-", "")
+        
+        {
+            id    = comp.Name // Temporary, not enough to identify uniquely a component, to fix
+            label = comp.Name
+            image = getIcon (sanitizedName comp.Name)
+            shape = "image"
+        }
+    
+    let createEdge (c1 : Component) (c2 : Component) =
+        {
+            from = c1.Name
+            ``to`` = c2.Name
+            length = 200
+        }
+    
+    let rec createEdges (comp : Component) dependencies =
+        match dependencies with
+        | []                  -> []
+        | Direct      x :: xs -> [ createEdge comp x ] @ createEdges comp xs
+        | Distributed x :: xs -> List.map (createEdge comp) x @ createEdges comp xs
+    
+    let rec getVisNodesAndEdges components nodes edges =
+        match components with
+        | [     ] -> nodes                            , edges
+        
+        | x :: xs -> let n = createNode x :: nodes
+                     let e = createEdges x x.Dependencies @ edges
+                     
+                     getVisNodesAndEdges xs n e
+    
+    getVisNodesAndEdges components [] []
+    |> (fun (n, e) -> (n |> Array.ofList, e |> Array.ofList))
+    ||> updateDiagram
+
 let update message model =
     match message with    
     | ChangeToTab tab    -> { model with CurrentTab = tab }                       , Cmd.none
-    | ChangeName name    -> { model with Name = name }                            , Cmd.none
+    | ChangeName name    -> { model with Name = name }                            , Cmd.ofMsg UpdateDiagram
     | ChangeSLA sla      -> { model with SLA = sla }                              , Cmd.none
     | ToggleIsEntryPoint -> { model with IsEntryPoint = not model.IsEntryPoint }  , Cmd.none
-    | ToggleDependency d -> { model with Dependencies = toggleDependency model d }, Cmd.none
+    | ToggleDependency d -> { model with Dependencies = toggleDependency model d }, Cmd.ofMsg UpdateDiagram
     | SetEntryPoint comp -> { model with EntryPoint = Some comp }                 , Cmd.none
     | EditComponent comp -> model |> withComponentEdit comp                       , Cmd.none
-    | DeleteComponent co -> model |> withoutComponent co                          , Cmd.none
-    | ClickAdd           -> model |> withComponentFromModel                       , Cmd.none
-    | ClickUpdate comp   -> model |> withUpdatedComponentFromModel comp           , Cmd.none
+    | DeleteComponent co -> model |> withoutComponent co                          , Cmd.ofMsg UpdateDiagram
+    | ClickAdd           -> model |> withComponentFromModel                       , Cmd.ofMsg UpdateDiagram
+    | ClickUpdate comp   -> model |> withUpdatedComponentFromModel comp           , Cmd.ofMsg UpdateDiagram
     | Export             -> exportState model; model                              , Cmd.none
-    | CompletedImport dx -> importState dx model                                  , Cmd.none
+    | CompletedImport dx -> importState dx model                                  , Cmd.ofMsg UpdateDiagram
     | FailedImport       -> printfn "Import failed"; model                        , Cmd.none
     | Reset              -> emptyModel                                            , Cmd.none
-    | LoadExample        -> exampleModel                                          , Cmd.none
+    | LoadExample        -> exampleModel                                          , Cmd.ofMsg UpdateDiagram
     | CancelEdit         -> cancelEditing model                                   , Cmd.none
+    | UpdateDiagram      -> updateDiagramFromModel model.Components; model        , Cmd.none

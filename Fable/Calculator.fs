@@ -11,7 +11,6 @@ open SlaCalculator.Helpers
 open SlaCalculator.Models
 open SlaCalculator.Messages
 open SlaCalculator.Calculate
-open SlaCalculator.VisNetwork
 
 module Icon = Free.Fa.Solid
 
@@ -261,8 +260,4 @@ let calculatorCard model dispatch =
         componentsTable
         
         Html.div [ prop.id "mynetwork"; prop.style [ Feliz.style.width(length.auto); Feliz.style.height(600) ] ]
-        
-        Button.button [
-            Button.OnClick (fun _ -> createDiagram [| networkNode |] [||])
-        ] [ str "TEST" ]
     ]

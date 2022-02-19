@@ -2,19 +2,21 @@ module SlaCalculator.VisNetwork
 
 open Fable.Core.JsInterop
 
-type Node = 
-    abstract id : int with get, set
-    abstract label : string with get, set
-    abstract image : string with get, set
-    abstract shape : string with get, set
+type Node =
+    {
+        id    : string
+        label : string
+        image : string
+        shape : string
+    }
 
-let networkNode = createEmpty<Node>
-
-networkNode.id    <- 1
-networkNode.label <- "Main"
-networkNode.image <- "Network-Pipe-icon.png"
-networkNode.shape <- "image"
+type Edge =
+    {
+        from   : string
+        ``to`` : string
+        length : int
+    }
 
 #nowarn "1182"
-let createDiagram (nodes : Node []) (edges : Node []) = import "createDiagram" "./VisNetwork.js"
+let updateDiagram (nodes : Node []) (edges : Edge []) = import "createDiagram" "./VisNetwork.js"
 #endnowarn
