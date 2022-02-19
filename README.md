@@ -24,7 +24,7 @@ The overall SLA of the solution is higher than the **App Service** as they are r
 
 # Diagrams
 
-![In-app diagrams](in-app diagrams.png)
+![In-app diagrams](in-app%20diagrams.png)
 
 The calculator draws a diagram of the component as you add them to the list. Currently only supports **Azure** icons and tries to match the name of the component de-pluralizing and removing characters. Better icons matching and other clouds will be added later.
 
